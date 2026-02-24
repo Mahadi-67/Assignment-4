@@ -18,6 +18,12 @@ const allCardSection = document.getElementById('all-cards');
 const buttonSection =  document.getElementById('Button');
 const filterSection = document.getElementById('Filtered-Section');
 
+function statusColorClass(status) {
+  if (status === "INTERVIEW") return "text-green-500";
+  if (status === "REJECTED") return "text-red-500";
+  return "text-gray-500";
+}
+
 
 function calculateCount(){
     countTotal.innerText = allCardSection.children.length;
@@ -90,15 +96,14 @@ allCardSection.addEventListener('click',function(event){
         info,
         status,
         notes,
-        el: parentNode
     };
 
 
-   const nameExist =  interviewList.find(item => item.el==parentNode)
+    const nameExist = interviewList.find(item => item.name == name)
 
    const statusEl = parentNode.querySelector('.Status');
    statusEl.innerText = "INTERVIEW";
-   statusEl.classList.remove("text-red-500", "text-gray-500");
+   statusEl.classList.remove("text-green-500", "text-red-500");
    statusEl.classList.add("text-green-500");
    cardInfo.status="INTERVIEW"
 
@@ -131,15 +136,14 @@ allCardSection.addEventListener('click',function(event){
           info,
           status,
           notes,
-          el: parentNode
       };
   
   
-     const nameExist =  rejectedList.find(item => item.el==parentNode)
+      const nameExist = rejectedList.find(item => item.name == name)
   
      const statusEl = parentNode.querySelector('.Status');
      statusEl.innerText = "REJECTED";
-     statusEl.classList.remove("text-green-500", "text-gray-500");
+     statusEl.classList.remove("text-green-500", "text-red-500");
      statusEl.classList.add("text-red-500");
      cardInfo.status="REJECTED"
   
@@ -218,9 +222,8 @@ filterSection.addEventListener('click', function(event){
 
   calculateCount();
 
-  // Re-render current tab
-  if(newStatus === "INTERVIEW") renderInterview();
-  else renderRejected();
+  // Switch current tab
+  toggleStyles(newStatus === "INTERVIEW" ? "interview" : "rejected");
 
 });
 
@@ -264,7 +267,7 @@ function renderInterview(){
           <p class="Info opacity-60">${interview.info}</p>
   
           <div>
-            <p class="Status btn border-none">${interview.status}</p>
+            <p class="Status btn border-none ${statusColorClass(interview.status)}">${interview.status}</p>
             <p class="notes">${interview.notes}</p>
           </div>
   
@@ -312,7 +315,7 @@ function renderInterview(){
           <p class="Info opacity-60">${reject.info}</p>
   
           <div>
-            <p class="Status btn border-none">${reject.status}</p>
+            <p class="Status btn border-none ${statusColorClass(reject.status)}">${reject.status}</p>
             <p class="notes">${reject.notes}</p>
           </div>
   
