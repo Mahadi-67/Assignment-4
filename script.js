@@ -2,7 +2,6 @@ let interviewList = [];
 let rejectedList = [];
 
 let currentTab = "all";
-// let currentStatus = 'all'
 
 let countTotal= document.getElementById('count-total');
 let countInterview= document.getElementById('count-interview');
@@ -29,9 +28,8 @@ function calculateCount(){
 calculateCount();
 
 function toggleStyles(id){
-    // reset button styles
+    
     currentTab = id;
-    // currentStatus = id
 
     [allButton, interviewButton, rejectedButton].forEach(btn => {
       btn.classList.remove('btn-primary');
@@ -53,7 +51,7 @@ function toggleStyles(id){
       filterSection.classList.remove('hidden');
   
       if (id === 'interview') renderInterview();
-      if (id === 'rejected') renderRejected(); // you’ll add this similarly
+      if (id === 'rejected') renderRejected(); 
     }
   }
 
@@ -61,7 +59,7 @@ function toggleStyles(id){
 allCardSection.addEventListener('click',function(event){
     
 
-  // ✅ DELETE from ALL tab
+  // DELETE from ALL tab
   if (event.target.closest('.delete-btn')) {
     const parentNode = event.target.closest('[data-status]');
     const name = parentNode.querySelector('.Name').innerText;
@@ -98,7 +96,10 @@ allCardSection.addEventListener('click',function(event){
 
    const nameExist =  interviewList.find(item => item.el==parentNode)
 
-   parentNode.querySelector('.Status').innerText = "INTERVIEW";
+   const statusEl = parentNode.querySelector('.Status');
+   statusEl.innerText = "INTERVIEW";
+   statusEl.classList.remove("text-red-500", "text-gray-500");
+   statusEl.classList.add("text-green-500");
    cardInfo.status="INTERVIEW"
 
 
@@ -136,7 +137,10 @@ allCardSection.addEventListener('click',function(event){
   
      const nameExist =  rejectedList.find(item => item.el==parentNode)
   
-     parentNode.querySelector('.Status').innerText = "REJECTED";
+     const statusEl = parentNode.querySelector('.Status');
+     statusEl.innerText = "REJECTED";
+     statusEl.classList.remove("text-green-500", "text-gray-500");
+     statusEl.classList.add("text-red-500");
      cardInfo.status="REJECTED"
   
   
@@ -146,12 +150,6 @@ allCardSection.addEventListener('click',function(event){
      }
 
      interviewList = interviewList.filter(item => item.name != cardInfo.name);
-    //  interviewList = interviewList.filter(item => item.name != cardInfo.name)
-
-  
-    //  if (currentStatus == interview) {
-    //   renderInterview();
-    //  }
 
      calculateCount();
      if(currentTab === "rejected") renderRejected();
@@ -163,7 +161,7 @@ allCardSection.addEventListener('click',function(event){
 
 filterSection.addEventListener('click', function(event){
 
-   // ✅ DELETE from Interview/Rejected tab
+   // DELETE from Interview/Rejected tab
    if (event.target.closest('.delete-btn')) {
     const parentNode = event.target.closest('[data-status]');
     const name = parentNode.querySelector('.Name').innerText;
@@ -173,7 +171,7 @@ filterSection.addEventListener('click', function(event){
 
     calculateCount();
 
-    // re-render active tab
+    // Re-Render active tab
     if (currentTab === "interview") renderInterview();
     if (currentTab === "rejected") renderRejected();
 
@@ -194,7 +192,16 @@ filterSection.addEventListener('click', function(event){
 
   const newStatus = isInterview ? "INTERVIEW" : "REJECTED";
 
-  parentNode.querySelector('.Status').innerText = newStatus;
+  const statusEl = parentNode.querySelector('.Status');
+  statusEl.innerText = newStatus;
+
+  statusEl.classList.remove("text-green-500", "text-red-500", "text-gray-500");
+
+  if (newStatus === "INTERVIEW") {
+    statusEl.classList.add("text-green-500");
+  } else {
+    statusEl.classList.add("text-red-500");
+  }
 
   // Remove from both lists first
   interviewList = interviewList.filter(item => item.name !== name);
