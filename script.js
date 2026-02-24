@@ -51,6 +51,10 @@ function toggleStyles(id){
       allCardSection.classList.remove('hidden');
       filterSection.classList.add('hidden');
       tabCount.innerText = allCardSection.children.length;
+      // ✅ Empty state for ALL tab
+if (allCardSection.children.length === 0) {
+  showEmptyState(allCardSection);
+}
     }
     else {
       allCardSection.classList.add('hidden');
@@ -78,6 +82,10 @@ allCardSection.addEventListener('click',function(event){
     parentNode.remove();
 
     calculateCount();
+
+    if (currentTab === "all" && allCardSection.children.length === 0) {
+      showEmptyState(allCardSection);
+    }
     return;
   }
 
@@ -228,8 +236,8 @@ filterSection.addEventListener('click', function(event){
 });
 
 
-function showEmptyState() {
-  filterSection.innerHTML = `
+function showEmptyState(container) {
+  container.innerHTML = `
     <div class="flex flex-col items-center justify-center bg-white border border-[#e6edf6] rounded-lg p-16 text-center min-h-[360px]">
       <img src="./jobs.png" class="w-20 mb-6" alt="empty" />
       <h2 class="text-2xl font-semibold text-blue-900 mb-2">No jobs available</h2>
@@ -245,7 +253,7 @@ function renderInterview(){
     filterSection.innerHTML = '';
 
     if(interviewList.length === 0){
-      showEmptyState();
+      showEmptyState(filterSection);
       tabCount.innerText = 0;
       return;
     }
@@ -292,7 +300,7 @@ function renderInterview(){
     filterSection.innerHTML = '';
   
     if(rejectedList.length === 0){
-      showEmptyState();
+      showEmptyState(filterSection);
       tabCount.innerText = 0;
       return;
     }
