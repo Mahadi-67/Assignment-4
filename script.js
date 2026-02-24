@@ -1,5 +1,8 @@
-let interviewList=[];
-let rejectedList=[];
+let interviewList = [];
+let rejectedList = [];
+
+let currentTab = "all";
+// let currentStatus = 'all'
 
 let countTotal= document.getElementById('count-total');
 let countInterview= document.getElementById('count-interview');
@@ -25,28 +28,11 @@ function calculateCount(){
 }
 calculateCount();
 
-
-// function toggleStyles(id){
-//     allButton.classList.remove('btn-primary')
-//     interviewButton.classList.remove('btn-primary')
-//     rejectedButton.classList.remove('btn-primary')
-
-//     allButton.classList.add('btn-outline')
-//     interviewButton.classList.add('btn-outline')
-//     rejectedButton.classList.add('btn-outline')
-
-//     const activeBtn = document.getElementById(id);
-//   activeBtn.classList.remove("btn-outline");
-//   activeBtn.classList.add("btn-primary");
-
-//   if (id=='all') {
-//     allCardSection.classList.add('hidden');
-//     filterSection.classList.remove('hidden');
-//   }
-// }
-
 function toggleStyles(id){
     // reset button styles
+    currentTab = id;
+    // currentStatus = id
+
     [allButton, interviewButton, rejectedButton].forEach(btn => {
       btn.classList.remove('btn-primary');
       btn.classList.add('btn-outline');
@@ -60,6 +46,7 @@ function toggleStyles(id){
     if (id === 'all') {
       allCardSection.classList.remove('hidden');
       filterSection.classList.add('hidden');
+      tabCount.innerText = allCardSection.children.length;
     }
     else {
       allCardSection.classList.add('hidden');
@@ -73,6 +60,22 @@ function toggleStyles(id){
 
 allCardSection.addEventListener('click',function(event){
     
+
+  // ✅ DELETE from ALL tab
+  if (event.target.closest('.delete-btn')) {
+    const parentNode = event.target.closest('[data-status]');
+    const name = parentNode.querySelector('.Name').innerText;
+
+    // remove from lists
+    interviewList = interviewList.filter(item => item.name !== name);
+    rejectedList = rejectedList.filter(item => item.name !== name);
+
+    // remove from DOM
+    parentNode.remove();
+
+    calculateCount();
+    return;
+  }
 
     if(event.target.classList.contains('interview-btn')){
     const parentNode = event.target.closest('[data-status]');
@@ -104,11 +107,12 @@ allCardSection.addEventListener('click',function(event){
     interviewList.push(cardInfo)
    }
 
+   rejectedList = rejectedList.filter(item => item.name != cardInfo.name)
+
    calculateCount();
-   renderInterview();
+   if(currentTab === "interview") renderInterview();
 
-  //  rejectedList = rejectedList.filter(item => item.el !== parentNode);
-
+  
     }
 
     else if(event.target.classList.contains('Rejected-btn')){
@@ -130,9 +134,9 @@ allCardSection.addEventListener('click',function(event){
       };
   
   
-     const nameExist =  interviewList.find(item => item.el==parentNode)
+     const nameExist =  rejectedList.find(item => item.el==parentNode)
   
-     parentNode.querySelector('.Status').innerText = "INTERVIEW";
+     parentNode.querySelector('.Status').innerText = "REJECTED";
      cardInfo.status="REJECTED"
   
   
@@ -140,23 +144,108 @@ allCardSection.addEventListener('click',function(event){
      if(!nameExist){
       rejectedList.push(cardInfo)
      }
+
+     interviewList = interviewList.filter(item => item.name != cardInfo.name);
+    //  interviewList = interviewList.filter(item => item.name != cardInfo.name)
+
   
+    //  if (currentStatus == interview) {
+    //   renderInterview();
+    //  }
+
      calculateCount();
-     renderRejected()
+     if(currentTab === "rejected") renderRejected();
   
-    //  rejectedList = rejectedList.filter(item => item.el !== parentNode);
   
       }
  
-})
+});
+
+filterSection.addEventListener('click', function(event){
+
+   // ✅ DELETE from Interview/Rejected tab
+   if (event.target.closest('.delete-btn')) {
+    const parentNode = event.target.closest('[data-status]');
+    const name = parentNode.querySelector('.Name').innerText;
+
+    interviewList = interviewList.filter(item => item.name !== name);
+    rejectedList = rejectedList.filter(item => item.name !== name);
+
+    calculateCount();
+
+    // re-render active tab
+    if (currentTab === "interview") renderInterview();
+    if (currentTab === "rejected") renderRejected();
+
+    return;
+  }
+
+  const parentNode = event.target.closest('[data-status]');
+  if(!parentNode) return;
+
+  const isInterview = event.target.classList.contains('interview-btn');
+  const isRejected = event.target.classList.contains('Rejected-btn');
+  if(!isInterview && !isRejected) return;
+
+  const name = parentNode.querySelector('.Name').innerText;
+  const designation = parentNode.querySelector('.Designation').innerText;
+  const info = parentNode.querySelector('.Info').innerText;
+  const notes = parentNode.querySelector('.notes').innerText;
+
+  const newStatus = isInterview ? "INTERVIEW" : "REJECTED";
+
+  parentNode.querySelector('.Status').innerText = newStatus;
+
+  // Remove from both lists first
+  interviewList = interviewList.filter(item => item.name !== name);
+  rejectedList = rejectedList.filter(item => item.name !== name);
+
+  // Add to correct list
+  const cardInfo = { name, designation, info, notes, status: newStatus };
+
+  if(newStatus === "INTERVIEW"){
+    interviewList.push(cardInfo);
+  } else {
+    rejectedList.push(cardInfo);
+  }
+
+  calculateCount();
+
+  // Re-render current tab
+  if(newStatus === "INTERVIEW") renderInterview();
+  else renderRejected();
+
+});
+
+
+function showEmptyState() {
+  filterSection.innerHTML = `
+    <div class="flex flex-col items-center justify-center bg-white border border-[#e6edf6] rounded-lg p-16 text-center min-h-[360px]">
+      <img src="./jobs.png" class="w-20 mb-6" alt="empty" />
+      <h2 class="text-2xl font-semibold text-blue-900 mb-2">No jobs available</h2>
+      <p class="text-gray-500">Check back soon for new job opportunities</p>
+    </div>
+  `;
+}
+
+
+
 
 function renderInterview(){
     filterSection.innerHTML = '';
+
+    if(interviewList.length === 0){
+      showEmptyState();
+      tabCount.innerText = 0;
+      return;
+    }
+    tabCount.innerText = interviewList.length;
   
     for(let interview of interviewList){
   
       let div = document.createElement('div');
       div.className = 'flex justify-between bg-white border border-[#e6edf6] rounded-lg p-6';
+      div.setAttribute("data-status", "none");
   
       div.innerHTML = ` 
         <div class="Left space-y-4">
@@ -179,7 +268,7 @@ function renderInterview(){
         </div>
   
         <div class="Right">
-          <button class="btn btn-sm btn-circle border border-slate-200">
+          <button class="delete-btn btn btn-sm btn-circle border border-slate-200">
             <i class="fa-regular fa-trash-can"></i>
           </button>
         </div>
@@ -192,10 +281,19 @@ function renderInterview(){
   function renderRejected(){
     filterSection.innerHTML = '';
   
+    if(rejectedList.length === 0){
+      showEmptyState();
+      tabCount.innerText = 0;
+      return;
+    }
+  
+    tabCount.innerText = rejectedList.length;
+
     for(let reject of rejectedList){
   
       let div = document.createElement('div');
       div.className = 'flex justify-between bg-white border border-[#e6edf6] rounded-lg p-6';
+      div.setAttribute("data-status", "none");
   
       div.innerHTML = ` 
         <div class="Left space-y-4">
@@ -218,7 +316,7 @@ function renderInterview(){
         </div>
   
         <div class="Right">
-          <button class="btn btn-sm btn-circle border border-slate-200">
+          <button class="delete-btn btn btn-sm btn-circle border border-slate-200">
             <i class="fa-regular fa-trash-can"></i>
           </button>
         </div>
@@ -227,146 +325,3 @@ function renderInterview(){
       filterSection.appendChild(div);
     }
   }
-
-// function renderInterview(){
-//     filterSection.innerHTML = ''
-
-//     for(let interview of interviewList){
-        
-//         let div = document.createElement('div');
-//         div.className = 'flex justify-between bg-white border border-[#e6edf6] rounded-lg p-6';
-//         div.innerHTML = ` 
-//         <div class="Left space-y-4">
-//                 <div>
-//                     <h2 class="Name text-2xl">Mobile First Corp</h2>
-//                     <p class="Designation opacity-60">React Native Developer</p>
-//                 </div>
-//                 <p class="Info opacity-60">Remote
-//                     • 
-//                    Full-time 
-//                    •
-//                     $130,000 - $175,000</p>
-//                     <div>
-//                         <p class="Status btn border-none">Not Applied</p>
-//                         <p class="notes">Build cross-platform mobile applications using React Native. Work on products used by millions of users worldwide.</p>
-//                     </div>
-
-//                 <div class="flex gap-4">
-//                     <button class="interview-btn btn btn-outline btn-success">INTERVIEW</button>
-//                     <button class="Rejected-btn btn btn-outline btn-error">REJECTED</button>
-//                 </div>
-
-//             </div>
-
-//             <div class="Right">
-//                 <button class="btn btn-sm btn-circle border border-slate-200"><i class="fa-regular fa-trash-can"></i></button>
-//             </div>
-//         `;
-
-//             filterSection.appendChild(div);
-//     }
-// }
-
-
-
-
-// // ========= DOM =========
-// let countTotal = document.getElementById('count-total');
-// let countInterview = document.getElementById('count-interview');
-// let countRejected = document.getElementById('count-rejected');
-// let tabCount = document.getElementById('tab-count');
-
-// let allButton = document.getElementById('all');
-// let interviewButton = document.getElementById('interview');
-// let rejectedButton = document.getElementById('rejected');
-
-// const allCardSection = document.getElementById('all-cards');
-// const filterSection = document.getElementById('Filtered-Section');
-
-// // ========= COUNT =========
-// function calculateCount() {
-//   const allCards = document.querySelectorAll('#all-cards > div');
-
-//   let interview = 0;
-//   let rejected = 0;
-
-//   allCards.forEach(card => {
-//     if (card.dataset.status === "interview") interview++;
-//     if (card.dataset.status === "rejected") rejected++;
-//   });
-
-//   countTotal.innerText = allCards.length;
-//   countInterview.innerText = interview;
-//   countRejected.innerText = rejected;
-// }
-
-// // ========= BUTTON STYLE =========
-// function toggleStyles(id) {
-//   allButton.classList.remove('btn-primary');
-//   interviewButton.classList.remove('btn-primary');
-//   rejectedButton.classList.remove('btn-primary');
-
-//   allButton.classList.add('btn-outline');
-//   interviewButton.classList.add('btn-outline');
-//   rejectedButton.classList.add('btn-outline');
-
-//   const activeBtn = document.getElementById(id);
-//   activeBtn.classList.remove('btn-outline');
-//   activeBtn.classList.add('btn-primary');
-// }
-
-// // ========= CLICK ON CARD BUTTONS =========
-// allCardSection.addEventListener('click', function (event) {
-
-//   // Interview
-//   if (event.target.classList.contains('interview-btn')) {
-//     const parentNode = event.target.closest('[data-status]');
-//     parentNode.dataset.status = "interview";
-//     parentNode.querySelector('.Status').innerText = "Interview";
-//     calculateCount();
-//   }
-
-//   // Rejected
-//   if (event.target.classList.contains('Rejected-btn')) {
-//     const parentNode = event.target.closest('[data-status]');
-//     parentNode.dataset.status = "rejected";
-//     parentNode.querySelector('.Status').innerText = "Rejected";
-//     calculateCount();
-//   }
-
-// });
-
-// // ========= SHOW TAB =========
-// function showTab(tab) {
-//   toggleStyles(tab);
-
-//   const allCards = document.querySelectorAll('#all-cards > div');
-
-//   if (tab === "all") {
-//     allCardSection.classList.remove('hidden');
-//     filterSection.classList.add('hidden');
-//     tabCount.innerText = allCards.length;
-//   } else {
-//     allCardSection.classList.add('hidden');
-//     filterSection.classList.remove('hidden');
-//     filterSection.innerHTML = '';
-
-//     let count = 0;
-
-//     allCards.forEach(card => {
-//       if (card.dataset.status === tab) {
-//         const clone = card.cloneNode(true);
-//         filterSection.appendChild(clone);
-//         count++;
-//       }
-//     });
-
-//     tabCount.innerText = count;
-//   }
-
-//   calculateCount();
-// }
-
-// // ========= INITIAL =========
-// calculateCount();
-// showTab('all');
